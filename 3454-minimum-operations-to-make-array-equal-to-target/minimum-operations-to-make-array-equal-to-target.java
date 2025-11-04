@@ -1,8 +1,7 @@
 class Solution {
     public long minimumOperations(int[] nums, int[] target) {
         int n = nums.length;
-        int prev = 0;
-        int curr = 0;
+        int prev = 0, curr = 0;
         long operations = 0;
         
 
