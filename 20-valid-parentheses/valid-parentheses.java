@@ -1,28 +1,23 @@
 class Solution {
     public boolean isValid(String s) {
         Deque<Character> stack = new ArrayDeque<>();
-        char j = s.toCharArray()[0];
-        if (j == ')' || j == '}' || j == ']' ){
-            return false;
-        }
 
-        for(char i : s.toCharArray()){
-            if (i == '(' || i == '{' || i == '['){
-                stack.push(i);
+        for(char c : s.toCharArray()){
+            // Push opening brackets
+            if (c == '(' || c == '{' || c == '[') {
+                stack.push(c);
             }
+            // Check for valid closing bracket
             else {
-                if(!stack.isEmpty() && stack.peek() == '(' && i == ')'){
-                    stack.pop();
-                }
-                else if(!stack.isEmpty() && stack.peek() == '[' && i == ']'){
-                    stack.pop();
-                }
-                else if(!stack.isEmpty() && stack.peek() == '{' && i == '}'){
-                    stack.pop();
-                }
-                else{
+                if (stack.isEmpty()) return false;
+
+                char top = stack.pop();
+                // Mismatch case
+                if (( top != '(' && c == ')') ||
+                    (top != '[' && c == ']') ||
+                    (top != '{' && c == '}')) {
                     return false;
-                }   
+                }
             }
         }
         return stack.isEmpty() ? true : false;
