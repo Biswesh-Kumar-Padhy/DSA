@@ -1,43 +1,41 @@
 class Solution {
     public int minOperations(int[] nums) {
         int n = nums.length;
-
-        int count1 = 0;
-        for (int num : nums) {
-            if (num == 1)
-                count1++;
+        // Count how many 1's are already in the array
+        int ones = 0;
+        for(int num : nums){
+            if(num == 1){
+                ones++;
+            }
         }
-
-        if (count1 > 0) {
-            return n - count1;
+        // If array has 1's, only need to convert remaining elements
+        if(ones > 0){ //gcd(ele , 1) = 1
+            return n - ones;
         }
-
-        int minStepsTo1 = Integer.MAX_VALUE;
-        for (int i = 0; i < n; i++) {
-            int gcdVal = nums[i];
-            for (int j = i + 1; j < n; j++) {
-                gcdVal = gcd(gcdVal, nums[j]);
-
-                if (gcdVal == 1) {
-                    minStepsTo1 = Math.min(minStepsTo1, j - i);
+        
+        int minSteps = Integer.MAX_VALUE;
+        // Find the smallest num(i,i+1) subarray with GCD = 1
+        for(int i = 0; i < n-1; i++){
+            int gcd = nums[i];
+            for(int j = i+1; j < n; j++){
+                gcd = computeGCD(gcd, nums[j]);
+                if(gcd == 1){
+                    minSteps = Math.min(minSteps, j - i);
                     break;
                 }
             }
         }
 
-        if (minStepsTo1 == Integer.MAX_VALUE) {
+        // If no subarray gives GCD = 1, impossible -> return -1.
+        if(minSteps == Integer.MAX_VALUE){
             return -1;
         }
 
-        return minStepsTo1 + (n - 1);
+        // Total = steps to create one '1' + steps to spread it
+        return minSteps + (n-1);
     }
 
-    private int gcd(int a, int b) {
-        while (b != 0) {
-            int temp = a % b;
-            a = b;
-            b = temp;
-        }
-        return a;
+    private int computeGCD(int a, int b){ //Helper func to compute gcd
+        return b==0 ? a : computeGCD(b , a%b);
     }
 }
