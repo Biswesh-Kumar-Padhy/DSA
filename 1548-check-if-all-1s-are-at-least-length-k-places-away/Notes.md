@@ -1,1 +1,1 @@
-<h2>check-if-all-1s-are-at-least-length-k-places-away Notes</h2><hr>[ Time taken: 12 m 37 s ]
+<h2>check-if-all-1s-are-at-least-length-k-places-away Notes</h2><hr>[ Time taken: 28 m 30 s ]
