@@ -1,53 +1,27 @@
 class Solution {
-    private int[][][] dp; // dp[m][n][idx] stores max strings using m zeros, n ones starting from index idx
-
-    // Recursive function with memoization
-    public int solve(int[][] count, int m, int n, int idx){
-        // Base case: no more strings or no capacity left
-        if(idx >= count.length || (m == 0 && n == 0)){
-            return 0;
-        }
-        // Return memoized result if already computed
-        if (dp[m][n][idx] != -1){
-            return dp[m][n][idx];
-        }
-
-        int include = 0;
-        // Option 1: Include current string if possible
-        if(count[idx][0] <= m && count[idx][1] <= n){
-            include = 1 + solve(count, m - count[idx][0], n - count[idx][1], idx + 1);
-        }
-        // Option 2: Skip current string
-        int exclude = solve(count, m, n, idx + 1);
-
-        // Store and return max of include/exclude
-        return dp[m][n][idx] = Math.max(include, exclude);
-    }
-
     public int findMaxForm(String[] strs, int m, int n) {
-        int N = strs.length;
-        int[][] cnt = new int[N][2]; // stores zero/one count of each string
+        // dp[i][j] = max strings formed using i zeros and j ones
+        int[][] dp = new int[m + 1][n + 1];
 
-        // Count zeros and ones for each string
-        for (int i = 0; i < N; i++){
-            int zeroes = 0, ones = 0;
-            for(char ch : strs[i].toCharArray()){
-                if(ch == '1') ones++;
-                else zeroes++;
+        for (String str : strs) {
+            int zeros = 0, ones = 0;
+            // Count zeros and ones in the current string
+            for (char ch : str.toCharArray()) {
+                if (ch == '0') zeros++;
+                else ones++;
             }
-            cnt[i][0] = zeroes; // store zero count
-            cnt[i][1] = ones;   // store one count
+
+            // Loop backwards so previous states are not overwritten
+            for (int zero = m; zero >= zeros; zero--) {
+                for (int one = n; one >= ones; one--) {
+                    // Either skip the string or take it (if possible)
+                    dp[zero][one] = Math.max(dp[zero][one],
+                                            dp[zero - zeros][one - ones] + 1);
+                }
+            }
         }
 
-        // Initialize DP array with -1
-        dp = new int[m + 1][n + 1][N];
-        for (int[][] layer : dp) {
-            for (int[] row : layer) {
-                Arrays.fill(row, -1);
-            }
-        }
-
-        // Solve starting from index 0
-        return solve(cnt, m, n, 0);
+        // Maximum strings using at most m zeros and n ones
+        return dp[m][n];
     }
 }
