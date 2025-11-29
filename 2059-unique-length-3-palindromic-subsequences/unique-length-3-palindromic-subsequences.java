@@ -1,35 +1,35 @@
 class Solution {
     public int countPalindromicSubsequence(String s) {
-        int n = s.length();
+        // Arrays to store the first and last occurrence of each char (a–z)
+        int[] first_idx = new int[26];
+        int[] last_idx = new int[26];
+        // Initialize all to -1 (i.e; character has not appeared yet)
+        Arrays.fill(first_idx, -1); 
+        Arrays.fill(last_idx, -1);
 
-        // Collect all unique characters in the string
-        Set<Character> letters = new HashSet<>();
-        for(char ch : s.toCharArray()){
-            letters.add(ch);
+        // Traverse string to record first & last occurrence for each char
+        for(int i = 0; i < s.length(); i++){
+            int curr = s.charAt(i) - 'a'; //a=0, b=1, c=3,...
+            if (first_idx[curr] == -1) {
+                first_idx[curr] = i; // first occurrence
+            }
+            last_idx[curr] = i; // keeps updating till last occurrence
         }
 
         int result = 0;
-        for(char letter : letters){
-            int left_idx = -1;
-            int right_idx = -1;
-
-            // Find the first and last occurrence of this 'letter'
-            for (int i = 0; i < n; i++) {
-                if (s.charAt(i) == letter) {
-                    if (left_idx == -1) {
-                        left_idx = i; // first occurrence
-                    }
-                    right_idx = i; // keeps updating till last occurrence
-                }
+        for(int idx = 0; idx < 26; idx++){
+            // If this character never appeared, skip it
+            if (first_idx[idx] == -1) {
+                continue;
             }
-        
-            Set<Character> set = new HashSet<>();
-            // Collect distinct char in between left_idx and right_idx
-            for(int i = left_idx + 1; i <=  right_idx - 1; i++){
-                // each distinct char forms a palindrome letter + char + letter
+            
+            Set<Character> set = new HashSet();
+            // Collect distinct char in between first_idx and last_idx
+            for(int i = first_idx[idx] + 1; i <=  last_idx[idx] - 1; i++){
+                // each distinct char forms a palindrome: letter + char + letter
                 set.add(s.charAt(i));
             }
-            // Number of unique palindromes contributed by this 'letter'
+            // Add no of unique valid palindromes contributed by this letter
             result += set.size();
         }
         return result;
