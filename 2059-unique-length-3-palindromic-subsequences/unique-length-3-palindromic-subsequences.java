@@ -1,27 +1,37 @@
 class Solution {
     public int countPalindromicSubsequence(String s) {
         int n = s.length();
-        int[] first = new int[26];
-        int[] last = new int[26];
-        Arrays.fill(first, -1);
 
-        // record first and last positions
-        for (int i = 0; i < n; i++) {
-            int c = s.charAt(i) - 'a';
-            if (first[c] == -1) first[c] = i;
-            last[c] = i;
+        // Collect all unique characters in the string
+        Set<Character> letters = new HashSet<>();
+        for(char ch : s.toCharArray()){
+            letters.add(ch);
         }
 
-        int ans = 0;
-        // for each letter, count distinct middle chars between first and last
-        for (int ch = 0; ch < 26; ch++) {
-            if (first[ch] == -1 || last[ch] - first[ch] <= 1) continue;
-            boolean[] seen = new boolean[26];
-            for (int i = first[ch] + 1; i < last[ch]; i++) {
-                seen[s.charAt(i) - 'a'] = true;
+        int result = 0;
+        for(char letter : letters){
+            int left_idx = -1;
+            int right_idx = -1;
+
+            // Find the first and last occurrence of this 'letter'
+            for (int i = 0; i < n; i++) {
+                if (s.charAt(i) == letter) {
+                    if (left_idx == -1) {
+                        left_idx = i; // first occurrence
+                    }
+                    right_idx = i; // keeps updating till last occurrence
+                }
             }
-            for (boolean b : seen) if (b) ans++;
+        
+            Set<Character> set = new HashSet<>();
+            // Collect distinct char in between left_idx and right_idx
+            for(int i = left_idx + 1; i <=  right_idx - 1; i++){
+                // each distinct char forms a palindrome letter + char + letter
+                set.add(s.charAt(i));
+            }
+            // Number of unique palindromes contributed by this 'letter'
+            result += set.size();
         }
-        return ans;
+        return result;
     }
 }
