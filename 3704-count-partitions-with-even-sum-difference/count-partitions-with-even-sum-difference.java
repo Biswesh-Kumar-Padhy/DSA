@@ -1,16 +1,11 @@
 class Solution {
     public int countPartitions(int[] nums) {
+        int n = nums.length;
         int total = 0;
         for(int num : nums) total += num;
 
-        int left = 0, count = 0;
-        for(int i = 0; i < nums.length - 1; i++){
-            left += nums[i];
-            int right = total - left;
-            if((left-right) % 2 == 0){
-                count++;
-            }
-        }
-        return count;
+        // If total sum is even ➝ all partitions work (n-1)
+        // If total sum is odd  ➝ no partitions work
+        return (total % 2 == 0) ? (n - 1) : 0;
     }
 }
