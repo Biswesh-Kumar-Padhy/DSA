@@ -1,61 +1,50 @@
 class Solution {
     public List<Integer> findAllPeople(int n, int[][] meetings, int firstPerson) {
-
-        // Group Meetings in increasing order of time
-        Map<Integer, List<int[]>> timeMeetings = new TreeMap<>();
+        // For every person, we store the meeting time and label of the person met.
+        Map<Integer, List<int[]>> graph = new HashMap<>();
         for (int[] meeting : meetings) {
-            int x = meeting[0], y = meeting[1], t = meeting[2];
-            timeMeetings.computeIfAbsent(t, k -> new ArrayList<>()).add(new int[]{x, y});
+            int person1 = meeting[0];
+            int person2 = meeting[1];
+            int time    = meeting[2];
+            graph.computeIfAbsent(person2, k -> new ArrayList<>()).add(new int[]{time, person1});
+            graph.computeIfAbsent(person1, k -> new ArrayList<>()).add(new int[]{time, person2});
         }
         
-        // Boolean Array to mark if a person knows the secret or not
-        boolean[] knowsSecret = new boolean[n];
-        knowsSecret[0] = true;
-        knowsSecret[firstPerson] = true;
+        // Priority Queue for BFS. It will store (time of knowing the secret, person)
+        // We will pop the person with the minimum time of knowing the secret.
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+        pq.offer(new int[]{0, 0});
+        pq.offer(new int[]{0, firstPerson});
 
-        // Process in increasing order of time
-        for (int t : timeMeetings.keySet()) {
-            // For each person, save all the people whom he/she meets at time t
-            Map<Integer, List<Integer>> meet = new HashMap<>();
-            for (int[] meeting : timeMeetings.get(t)) {
-                int x = meeting[0], y = meeting[1];
-                meet.computeIfAbsent(x, k -> new ArrayList<>()).add(y);
-                meet.computeIfAbsent(y, k -> new ArrayList<>()).add(x);
-            }
+        // Visited array to mark if a person is visited or not.
+        // We will mark a person as visited after it is dequeued
+        // from the queue.
+        boolean[] visited = new boolean[n];
 
-            // Start traversal from those who already know the secret at time t
-            // Set to avoid redundancy
-            Set<Integer> start = new HashSet<>();
-            for (int[] meeting : timeMeetings.get(t)) {
-                int x = meeting[0], y = meeting[1];
-                if (knowsSecret[x]) {
-                    start.add(x);
-                }
-                if (knowsSecret[y]) {
-                    start.add(y);
-                }
+        // Do BFS, but pop minimum.
+        while (!pq.isEmpty()) {
+            int[] timePerson = pq.poll();
+            int time = timePerson[0], person = timePerson[1];
+            if (visited[person]) {
+                continue;
             }
-            
-            // Do BFS
-            Queue<Integer> q = new LinkedList<>(start);
-            while (!q.isEmpty()) {
-                int person = q.poll();
-                for (int nextPerson : meet.getOrDefault(person, new ArrayList<>())) {
-                    if (!knowsSecret[nextPerson]) {
-                        knowsSecret[nextPerson] = true;
-                        q.offer(nextPerson);
-                    }
+            visited[person] = true;
+            for (int[] nextPersonTime : graph.getOrDefault(person, new ArrayList<>())) {
+                int t = nextPersonTime[0], nextPerson = nextPersonTime[1];
+                if (!visited[nextPerson] && t >= time) {
+                    pq.offer(new int[]{t, nextPerson});
                 }
             }
         }
         
-        // List of people who know the secret
-        List<Integer> result = new ArrayList<>();
+        // Since we visited only those people who know the secret
+        // we need to return indices of all visited people.
+        List<Integer> ans = new ArrayList<>();
         for (int i = 0; i < n; ++i) {
-            if (knowsSecret[i]) {
-                result.add(i);
+            if (visited[i]) {
+                ans.add(i);
             }
         }
-        return result;
+        return ans;
     }
 }
