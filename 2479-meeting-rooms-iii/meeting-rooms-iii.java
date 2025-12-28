@@ -2,33 +2,34 @@ class Solution {
     public int mostBooked(int n, int[][] meetings) {
         // sort by starting time of meetings
         Arrays.sort(meetings, (a, b) -> Integer.compare(a[0], b[0]));
+        int[] roomsUsedCount = new int[n]; // count of meetings per room
 
-        // Each room is used 0 times in the beginning
-        int[] roomsUsedCount = new int[n];
+        // usedRooms: [endTime, room], ordered by earliest endTime, then room id
+        PriorityQueue<long[]> usedRooms=new PriorityQueue<>((a, b) -> a[0]!=b[0]
+                                            ? Long.compare(a[0], b[0])
+                                            : Long.compare(a[1], b[1]));
 
-        var usedRooms = new PriorityQueue<long[]>((a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0]) : Long.compare(a[1], b[1]));
-        var unusedRooms = new PriorityQueue<Integer>();
+        // unusedRooms: available rooms ordered by room number
+        PriorityQueue<Integer> unusedRooms = new PriorityQueue<>();
         
         for (int room = 0; room < n; room++) {
             unusedRooms.add(room); // All rooms are unused in the beginning
         }
 
         for (int[] meet : meetings) {
-            int start = meet[0];
-            int end = meet[1];
+            int start = meet[0], end = meet[1];
 
-            // First see, by this time, which rooms can be empty now
-            // And move them to unusedRooms
+            // Free rooms whose meetings have ended by current start time
             while (!usedRooms.isEmpty() && usedRooms.peek()[0] <= start) {
                 int room = (int) usedRooms.poll()[1];
                 unusedRooms.add(room);
             }
 
             if (!unusedRooms.isEmpty()) {
-                int room = unusedRooms.poll();
+                int room = unusedRooms.poll(); // Assign earliest available room
                 usedRooms.add(new long[]{end, room});
                 roomsUsedCount[room]++;
-            } else { // We don't have any room available now. Pick the earliest end room
+            } else { // Delay meeting in the room that ends earliest
                 int room = (int) usedRooms.peek()[1];
                 long endTime = usedRooms.poll()[0];
                 usedRooms.add(new long[]{endTime + (end - start), room});
@@ -36,15 +37,13 @@ class Solution {
             }
         }
 
-        int resultRoom = -1;
-        int maxUse = 0;
+        // Find room with maximum usage (smallest index on tie)
+        int resultRoom = 0;
         for (int room = 0; room < n; room++) {
-            if (roomsUsedCount[room] > maxUse) {
-                maxUse = roomsUsedCount[room];
+            if (roomsUsedCount[room] > roomsUsedCount[resultRoom]){
                 resultRoom = room;
             }
         }
-
         return resultRoom;
     }
 }
