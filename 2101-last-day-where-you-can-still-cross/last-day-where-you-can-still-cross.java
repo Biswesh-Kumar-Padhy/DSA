@@ -1,61 +1,53 @@
 class Solution {
-    int ROW, COL;
-    // 4 possible movement directions: down, up, right, left
-    int[][] directions = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+    int[] parent, rank;
+    int rows, cols, top, bottom;
+    int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
 
-    // Binary search on days to find latest possible crossing day
     public int latestDayToCross(int row, int col, int[][] cells) {
-        ROW = row;
-        COL = col;
+        rows = row;
+        cols = col;
+        int total = row * col;
+        top = total;
+        bottom = total + 1;
 
-        int left = 0, right = cells.length - 1;
-        int lastDay = 0;
+        parent = new int[total + 2];
+        rank = new int[total + 2];
+        for (int i = 0; i < parent.length; i++) parent[i] = i;
 
-        while (left <= right) {
-            int mid = left + (right - left) / 2;
+        boolean[][] land = new boolean[row][col];
 
-            if (canCross(cells, mid)) {
-                lastDay = mid + 1; // days are 1-based
-                left = mid + 1;
-            } else {
-                right = mid - 1;
+        // Traverse days in reverse
+        for (int d = cells.length - 1; d >= 0; d--) {
+            int r = cells[d][0] - 1;
+            int c = cells[d][1] - 1;
+            land[r][c] = true;
+            int id = r * cols + c;
+
+            // connect neighbors
+            for (int[] dir : dirs) {
+                int nr = r + dir[0], nc = c + dir[1];
+                if (nr >= 0 && nr < row && nc >= 0 && nc < col && land[nr][nc]) {
+                    union(id, nr * cols + nc);
+                }
             }
+
+            if (r == 0) union(id, top);
+            if (r == row - 1) union(id, bottom);
+
+            if (find(top) == find(bottom))
+                return d;
         }
-        return lastDay;
+        return 0;
     }
 
-    // Check if crossing is possible on given day
-    boolean canCross(int[][] cells, int day) {
-        int[][] grid = new int[ROW][COL];
-
-        for (int i = 0; i <= day; i++) { // Mark flooded cells up to 'day'
-            int r = cells[i][0] - 1;
-            int c = cells[i][1] - 1;
-            grid[r][c] = 1;
-        }
-
-        for (int j = 0; j < COL; j++) { // Try to start DFS from top row
-            if (grid[0][j] == 0 && dfs(grid, 0, j))
-                return true;
-        }
-        return false;
+    int find(int x) {
+        if (parent[x] != x) parent[x] = find(parent[x]);
+        return parent[x];
     }
 
-    // DFS to check if we can reach bottom row starting from (i, j)
-    boolean dfs(int[][] grid, int i, int j) {
-        // Out of bounds or water cell
-        if (i < 0 || i >= ROW || j < 0 || j >= COL || grid[i][j] == 1)
-            return false;
-
-        // Reached bottom row → path exists
-        if (i == ROW - 1)   return true;
-
-        grid[i][j] = 1; // mark as visited (water)
-
-        for (int[] dir : directions) { // Explore all 4 directions
-            if (dfs(grid, i + dir[0], j + dir[1]))
-                return true;
-        }
-        return false;
-    }   
+    void union(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a != b) parent[a] = b;
+    }
 }
